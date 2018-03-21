@@ -10,7 +10,10 @@ import ex2 from './assets/ex2.png'
 import ex3 from './assets/ex3.png'
 import ex4 from './assets/ex4.png'
 
+import file from './assets/datastore.json';
 
+
+var index = 0;
 const reducer = (accumulator, currentValue) => accumulator + currentValue;
 const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -99,27 +102,27 @@ class App extends Component {
 
   componentDidMount(){
       var self = this;
-
+      
       setInterval(function(){
           
-          var usd_amt = self.state.usd_amt | 0;
-          var machines = self.state.machines_owned;
-
-          axios.get("http://localhost:8080/")
-          .then(function(response){
-           let data = response.data;
-           let scale = data.difficulty;
-           let new_btc_amt = self.state.btc_amt + machines.map(function(item, index){return item*(Math.random()*2*Math.pow(2,index+1)/scale)}).reduce(reducer) | 0;
-           let new_eth_amt = self.state.eth_amt + machines.map(function(item, index){return item*((Math.random()*2*Math.pow(2,index+1) )/scale)}).reduce(reducer) | 0;
-           let new_xrp_amt = self.state.xrp_amt + machines.map(function(item, index){return item*((Math.random()*10*Math.pow(2,index+1))/scale)}).reduce(reducer) | 0;
-           let net_asset_value = usd_amt + (new_btc_amt * data.btc) + (new_eth_amt * data.eth) + (new_xrp_amt * data.xrp);
-           let date = data.timestamp * 1000;
-           date = new Date(date);
-           date = date.getDate() + "-" + months[date.getMonth()] + "-" + date.getFullYear();
+        if (index > 900){
+            index = 0;
+        }
+        var usd_amt = self.state.usd_amt | 0;
+        var machines = self.state.machines_owned;
+        let data = file[index];
+        let scale = data.difficulty;
+        let new_btc_amt = self.state.btc_amt + machines.map(function(item, index){return item*(Math.random()*2*Math.pow(2,index+1)/scale)}).reduce(reducer) | 0;
+        let new_eth_amt = self.state.eth_amt + machines.map(function(item, index){return item*((Math.random()*2*Math.pow(2,index+1) )/scale)}).reduce(reducer) | 0;
+        let new_xrp_amt = self.state.xrp_amt + machines.map(function(item, index){return item*((Math.random()*10*Math.pow(2,index+1))/scale)}).reduce(reducer) | 0;
+        let net_asset_value = usd_amt + (new_btc_amt * data.btc) + (new_eth_amt * data.eth) + (new_xrp_amt * data.xrp);
+        let date = data.timestamp * 1000;
+        date = new Date(date);
+        date = date.getDate() + "-" + months[date.getMonth()] + "-" + date.getFullYear();
               
-          self.setState({btc: data.btc, eth: data.eth, xrp: data.xrp, timestamp: date, difficulty: data.difficulty, total: net_asset_value, btc_amt: new_btc_amt, eth_amt: new_eth_amt, xrp_amt: new_xrp_amt});
-          //console.log(JSON.stringify(self.state))
-          });
+        self.setState({btc: data.btc, eth: data.eth, xrp: data.xrp, timestamp: date, difficulty: data.difficulty, total: net_asset_value, btc_amt: new_btc_amt, eth_amt: new_eth_amt, xrp_amt: new_xrp_amt});
+        index += 1;
+          
       },1000);
   }
     
